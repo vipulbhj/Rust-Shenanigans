@@ -75,6 +75,27 @@ struct Trie<T> {
     root_: TrieNode<T>,
 }
 
+fn remove_helper<T>(parent_node: &mut TrieNode<T>, key: &str) -> bool {
+    if key.is_empty() {
+        return false;
+    }
+
+    let c = key.chars().nth(0).unwrap();
+    let node = match parent_node.get_child_node(c) {
+        None => {
+            return false;
+        }
+        Some(v) => v,
+    };
+
+    if !node.has_children() && key.len() == 1 {
+        parent_node.remove_child_node(c);
+    } else {
+        return remove_helper(node, &key[1..]);
+    }
+    true
+}
+
 impl<T> Trie<T> {
     fn new() -> Trie<T> {
         Trie {
@@ -122,7 +143,16 @@ impl<T> Trie<T> {
         true
     }
 
-    // Get Key Value
+    // Remove a key from the trie
+    fn remove(&mut self, key: &str) -> bool {
+        if key.is_empty() {
+            return false;
+        }
+
+        return remove_helper(&mut self.root_, key);
+    }
+
+    // Get key value from the trie
     fn get_value(&mut self, key: &str) -> Option<&T> {
         if key.is_empty() {
             return None;
@@ -181,6 +211,9 @@ fn main() {
     // Trie Test
     let mut trie = Trie::<&str>::new();
 
+    // Trie Empty Insert Test
+    assert_eq!(trie.insert("", "test"), false);
+
     // Trie Random Order Insert Test
     trie.insert("a", "one");
     trie.insert("aaa", "three");
@@ -193,5 +226,24 @@ fn main() {
     assert_eq!(trie.get_value("aa"), Some(&"two"));
 
     // Trie Insert Duplicate Key Test
-    assert_eq!(trie.insert("a", "one"), false);
+    assert_eq!(trie.insert("a", "ten"), false);
+    assert_eq!(trie.get_value("a"), Some(&"one"));
+
+    // Trie Remove Test
+    assert_eq!(trie.remove("aaaaa"), false);
+    assert_eq!(trie.remove("aaaa"), true);
+    assert_eq!(trie.get_value("aaaa"), None);
+    assert_eq!(trie.remove("aaa"), true);
+    assert_eq!(trie.get_value("aaa"), None);
+
+    // Trie Reinsert and Remove Test
+    assert_eq!(trie.remove("a"), false);
+    trie.insert("aaaa", "four");
+    trie.insert("aaa", "three");
+    assert_eq!(trie.get_value("aaa"), Some(&"three"));
+    assert_eq!(trie.get_value("aaaa"), Some(&"four"));
+    assert_eq!(trie.remove("aaaa"), true);
+    assert_eq!(trie.get_value("aaaa"), None);
+    assert_eq!(trie.remove("aaa"), true);
+    assert_eq!(trie.get_value("aaa"), None);
 }
