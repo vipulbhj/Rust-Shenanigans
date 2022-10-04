@@ -53,14 +53,6 @@ impl<T> TrieNode<T> {
         self.children_.remove(&key_char)
     }
 
-    fn set_key_char(&mut self, key_char: char) {
-        self.key_char_ = key_char;
-    }
-
-    fn get_children(&self) -> &HashMap<char, TrieNode<T>> {
-        &self.children_
-    }
-
     fn get_value(&self) -> Option<&T> {
         self.value_.as_ref()
     }
@@ -135,7 +127,7 @@ impl<T> Trie<T> {
                 None => current_node.set_value(value),
             };
         } else {
-            current_node = current_node
+            current_node
                 .insert_child_node(last_char, TrieNode::new(last_char, Some(value)))
                 .unwrap();
         }
