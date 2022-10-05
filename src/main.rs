@@ -67,27 +67,6 @@ struct Trie<T> {
     root_: TrieNode<T>,
 }
 
-fn remove_helper<T>(parent_node: &mut TrieNode<T>, key: &str) -> bool {
-    if key.is_empty() {
-        return false;
-    }
-
-    let c = key.chars().nth(0).unwrap();
-    let node = match parent_node.get_child_node(c) {
-        None => {
-            return false;
-        }
-        Some(v) => v,
-    };
-
-    if !node.has_children() && key.len() == 1 {
-        parent_node.remove_child_node(c);
-    } else {
-        return remove_helper(node, &key[1..]);
-    }
-    true
-}
-
 impl<T> Trie<T> {
     fn new() -> Trie<T> {
         Trie {
@@ -141,7 +120,28 @@ impl<T> Trie<T> {
             return false;
         }
 
-        return remove_helper(&mut self.root_, key);
+        return Self::remove_helper(&mut self.root_, key);
+    }
+
+    fn remove_helper(parent_node: &mut TrieNode<T>, key: &str) -> bool {
+        if key.is_empty() {
+            return false;
+        }
+
+        let c = key.chars().nth(0).unwrap();
+        let node = match parent_node.get_child_node(c) {
+            None => {
+                return false;
+            }
+            Some(v) => v,
+        };
+
+        if !node.has_children() && key.len() == 1 {
+            parent_node.remove_child_node(c);
+        } else {
+            return Self::remove_helper(node, &key[1..]);
+        }
+        true
     }
 
     // Get key value from the trie
